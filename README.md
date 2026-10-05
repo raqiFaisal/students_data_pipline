@@ -1,197 +1,437 @@
-# Student Data Pipeline
+# 📊 Student Data Pipeline
 
-## Overview
+مشروع **Data Pipeline لمعالجة بيانات الطلاب** باستخدام Python، يقوم باستخراج البيانات من عدة مصادر مختلفة، ثم دمجها وتنظيفها وتحويلها والتحقق من جودتها، وفي النهاية تخزين البيانات الصحيحة في **MongoDB**.
 
-This project implements an ETL data pipeline that collects student data from multiple sources, integrates it using `student_id`, cleans and transforms the data, validates it, and loads the final valid records into MongoDB.
+---
 
-### Sources
+## 🎯 فكرة المشروع
 
-- CSV
-- REST API
-- SQLite database
-- Optional MongoDB source
-- Web Scraping from an HTML page/table
+الهدف من المشروع هو بناء Pipeline قادر على التعامل مع بيانات الطلاب القادمة من مصادر متعددة، وتحويلها إلى بيانات موحدة ونظيفة وجاهزة للتخزين والاستخدام.
 
-### Final destination
-
-- MongoDB database: `student_pipeline`
-- Collection: `final_students`
-
-The MongoDB writer uses a unique index on `student_id` and `upsert`, so rerunning the pipeline does not create duplicate documents.
-
-## Pipeline
+المشروع يطبق مراحل عملية ETL:
 
 ```text
-CSV ───────────────┐
-API ───────────────┤
-SQLite ────────────┤
-MongoDB (optional) ┤
-Web Scraping ──────┘
-        ↓
-   Integration
-        ↓
-     Cleaning
-        ↓
- Transformation
-        ↓
-    Validation
-      ↙     ↘
- Valid      Rejected
-   ↓           ↓
-MongoDB     CSV file
+Extract
    ↓
-Final destination
+Integrate
+   ↓
+Clean
+   ↓
+Transform
+   ↓
+Validate
+   ↓
+Load
+   ↓
+MongoDB
 ```
 
-## Web Scraping
+---
 
-The scraper is implemented in:
+## 🗂️ مصادر البيانات
 
-`app/sources/web_scraper.py`
+المشروع يستطيع التعامل مع عدة مصادر:
 
-It uses `requests` and `BeautifulSoup`, then returns a pandas `DataFrame`.
+### 1. CSV
 
-The URL and CSS selectors are configured in `config.json`:
+يتم قراءة بيانات الطلاب من ملف CSV موجود داخل:
+
+```text
+data/raw/students.csv
+```
+
+### 2. REST API
+
+يستخرج بيانات الطلاب من API.
+
+في بيئة الاختبار يتم استخدام API محلي:
+
+```text
+http://localhost:8000/students
+```
+
+### 3. SQLite Database
+
+يتم استخراج بيانات إضافية من قاعدة بيانات SQLite الموجودة في:
+
+```text
+database/students.db
+```
+
+### 4. MongoDB كمصدر اختياري
+
+يمكن للمشروع أيضًا قراءة بيانات إضافية من MongoDB كمصدر بيانات، ويمكن تفعيل أو تعطيل هذا المصدر من `config.json`.
+
+### 5. Web Scraping
+
+يحتوي المشروع على Web Scraper باستخدام:
+
+* Python
+* Requests
+* BeautifulSoup
+* Pandas
+
+ويتم استخراج بيانات من جدول HTML.
+
+في بيئة الاختبار يتم استخدام صفحة HTML محلية:
+
+```text
+http://localhost:8000/scraped-students
+```
+
+ومن البيانات التي يتم استخراجها:
+
+```text
+student_id
+city
+web_status
+```
+
+---
+
+## 🔄 مراحل معالجة البيانات
+
+### المرحلة الأولى: Extract
+
+يتم استخراج البيانات من جميع المصادر المفعلة:
+
+```text
+CSV
+API
+SQLite
+MongoDB (اختياري)
+Web Scraping
+```
+
+---
+
+### المرحلة الثانية: Integration
+
+يتم دمج البيانات باستخدام:
+
+```text
+student_id
+```
+
+كمفتاح مشترك بين المصادر.
+
+تم تصميم عملية الدمج بحيث تمنع:
+
+* تكرار السجلات.
+* زيادة عدد الصفوف بشكل غير مقصود.
+* Cartesian Product.
+
+---
+
+### المرحلة الثالثة: Cleaning
+
+يتم تنظيف البيانات من خلال:
+
+* إزالة السجلات المكررة.
+* معالجة القيم المفقودة.
+* توحيد أنواع البيانات.
+* توحيد النصوص.
+* التعامل مع القيم غير الصالحة.
+
+---
+
+### المرحلة الرابعة: Transformation
+
+يتم تطبيق عمليات التحويل المطلوبة على البيانات وتجهيزها بالشكل المناسب للمرحلة النهائية.
+
+---
+
+### المرحلة الخامسة: Validation
+
+يتم التحقق من جودة البيانات قبل تخزينها.
+
+يتم فصل:
+
+```text
+Valid Records
+```
+
+عن:
+
+```text
+Rejected Records
+```
+
+السجلات غير الصالحة لا يتم تخزينها في قاعدة البيانات النهائية.
+
+ويتم حفظها في:
+
+```text
+data/rejected/rejected_records.csv
+```
+
+---
+
+## 🗄️ تخزين البيانات النهائية
+
+الوجهة النهائية للبيانات الصحيحة هي:
+
+**MongoDB**
+
+Database:
+
+```text
+student_pipeline
+```
+
+Collection:
+
+```text
+final_students
+```
+
+أي أن المسار النهائي هو:
+
+```text
+MongoDB
+└── student_pipeline
+    └── final_students
+```
+
+---
+
+## 🔐 منع تكرار البيانات
+
+يعتمد المشروع على:
+
+```text
+student_id
+```
+
+كمفتاح منطقي للطالب.
+
+ويتم استخدام:
+
+* Unique Index
+* Upsert
+* Bulk Write
+
+لمنع إنشاء سجلات مكررة عند تشغيل الـPipeline أكثر من مرة.
+
+---
+
+## ⚙️ إعداد المشروع
+
+يتم التحكم في مصادر البيانات وإعدادات MongoDB من خلال:
+
+```text
+config.json
+```
+
+مثال:
 
 ```json
-"scraping": {
-    "enabled": true,
-    "url": "http://localhost:8000/scraped-students",
-    "timeout": 10,
-    "selectors": {
-        "table": "#students",
-        "rows": "tbody tr",
-        "headers": "thead th",
-        "cells": "td"
+{
+    "output": {
+        "mongodb": {
+            "enabled": true,
+            "uri": "mongodb://localhost:27017",
+            "database": "student_pipeline",
+            "collection": "final_students"
+        }
     }
 }
 ```
 
-If the page cannot be reached or the configured table/elements are not found, the scraper logs the problem and returns an empty DataFrame instead of stopping the entire pipeline.
+---
 
-## Integration
+## 📁 هيكل المشروع
 
-All sources are joined using:
-
-`student_id`
-
-Each source is reduced to one record per `student_id` before merging. Pandas `merge(..., validate="one_to_one")` is used to prevent accidental Cartesian products or row multiplication.
-
-## Cleaning and transformation
-
-The existing cleaning/transformation modules are reused. They handle:
-
-- Duplicate `student_id` records
-- Missing values
-- Text normalization
-- Numeric type conversion
-- Range checks
-- Email/phone/skills cleaning
-- Derived columns such as `performance_level` and `attendance_status`
-
-## Validation
-
-Required fields and value ranges are checked before loading.
-
-Invalid records are separated into:
-
-`data/rejected/rejected_records.csv`
-
-Only valid records are sent to MongoDB.
-
-## MongoDB
-
-MongoDB configuration is stored in `config.json` rather than hard-coded in Python:
-
-```json
-"mongodb": {
-    "enabled": true,
-    "uri": "mongodb://localhost:27017",
-    "database": "student_pipeline",
-    "collection": "final_students"
-}
+```text
+student_data_pipeline/
+│
+├── app/
+│   ├── output/
+│   │   ├── csv_writer.py
+│   │   └── mongodb_writer.py
+│   │
+│   ├── sources/
+│   │   ├── api_source.py
+│   │   ├── csv_source.py
+│   │   ├── database_source.py
+│   │   ├── mongodb.py
+│   │   └── web_scraper.py
+│   │
+│   ├── transformation/
+│   │   ├── cleaner.py
+│   │   ├── integration.py
+│   │   └── transformer.py
+│   │
+│   ├── validation/
+│   │   └── quality.py
+│   │
+│   └── utils/
+│       └── logger.py
+│
+├── data/
+│   ├── raw/
+│   └── rejected/
+│
+├── database/
+│   └── students.db
+│
+├── mock_api/
+│   ├── server.py
+│   ├── students_api.json
+│   └── students_scraped.html
+│
+├── tests/
+│
+├── config.json
+├── main.py
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
-The final loader:
+---
 
-1. Connects to MongoDB.
-2. Verifies the connection with `ping`.
-3. Creates a unique index on `student_id`.
-4. Uses `ReplaceOne(..., upsert=True)` for each final record.
-5. Reports inserted and updated counts in the log.
+## 🛠️ التقنيات المستخدمة
 
-No `delete_many()` is used, so an existing collection is not wiped on every pipeline run.
+| التقنية       | الاستخدام                        |
+| ------------- | -------------------------------- |
+| Python        | لغة البرمجة الأساسية             |
+| Pandas        | معالجة وتحليل البيانات           |
+| Requests      | الاتصال بالـAPI وجلب صفحات الويب |
+| BeautifulSoup | استخراج البيانات من HTML         |
+| SQLite        | مصدر بيانات                      |
+| MongoDB       | تخزين البيانات النهائية          |
+| PyMongo       | الاتصال بـMongoDB                |
+| Pytest        | اختبار المشروع                   |
+| Logging       | تسجيل مراحل تنفيذ الـPipeline    |
+| JSON          | إعدادات المشروع والبيانات        |
 
-## Configuration
+---
 
-All important source/output settings are in `config.json`.
+## 📦 تثبيت المتطلبات
 
-Do not place passwords or secrets directly in source code. For a real deployment, use environment variables or a secret manager for credentials.
-
-## Installation
-
-From the project root:
+بعد تحميل المشروع، افتح Terminal داخل مجلد المشروع ثم نفذ:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Running the local mock API
+---
 
-Open a terminal and run:
+## ▶️ تشغيل المشروع
 
-```bash
-python mock_api/server.py
-```
+أولًا تأكد من تشغيل MongoDB على جهازك.
 
-Keep it running while executing the pipeline.
-
-## Running the pipeline
-
-Make sure MongoDB is running locally, then from the project root:
+ثم شغّل الـPipeline:
 
 ```bash
 python main.py
 ```
 
-The pipeline will execute:
+المشروع سينفذ المراحل بالترتيب:
 
 ```text
 Extract
-  ↓
-Integrate
-  ↓
-Clean
-  ↓
-Transform
-  ↓
-Validate
-  ↓
-Load valid data to MongoDB
+↓
+Integration
+↓
+Cleaning
+↓
+Transformation
+↓
+Validation
+↓
+MongoDB
 ```
 
-It also writes rejected records to:
+---
 
-- `data/rejected/rejected_records.csv`
-- `logs/pipeline.log`
+## 🌐 تشغيل الـMock API والـWeb Scraping
 
-The processed valid dataset is **not written to a final CSV**. MongoDB is the final destination:
+لأغراض الاختبار، يمكن تشغيل السيرفر المحلي الموجود في:
 
-- Database: `student_pipeline`
-- Collection: `final_students`
+```text
+mock_api/server.py
+```
 
-## Tests
-
-Run:
+ثم تشغيل:
 
 ```bash
-python -m pytest -q
+python mock_api/server.py
 ```
 
-The project includes tests for scraping, integration, validation, logging, pipeline outputs, and MongoDB upsert logic.
+وسيتم توفير مصادر الاختبار المحلية للـAPI وWeb Scraping.
 
-## Expected local setup
+---
 
-For the included mock data, the pipeline produces 15 final valid records with unique `student_id` values when all configured sources are available. The scraping source contributes columns such as `city_scraping` and `web_status` without replacing the existing CSV `city` column.
+## 🧪 تشغيل الاختبارات
 
-For the final MongoDB load to occur on your machine, MongoDB must be reachable at the configured URI and `pymongo` must be installed.
+لتشغيل اختبارات المشروع:
+
+```bash
+pytest
+```
+
+الاختبارات تغطي أجزاء مختلفة من المشروع، ومنها:
+
+* Integration
+* Validation
+* Web Scraping
+* MongoDB
+* Logging
+* Pipeline
+
+---
+
+## 🔎 التحقق من البيانات في MongoDB
+
+بعد تشغيل المشروع، افتح **MongoDB Compass** واتصل بـ:
+
+```text
+mongodb://localhost:27017
+```
+
+ثم افتح:
+
+```text
+student_pipeline
+    └── final_students
+```
+
+ستجد هناك البيانات النهائية التي اجتازت مرحلة الـValidation.
+
+---
+
+## 📌 ملاحظات مهمة
+
+* بيانات MongoDB النهائية لا يتم حفظها في ملف CSV.
+* ملف `rejected_records.csv` يحتوي على السجلات التي لم تجتز عملية التحقق.
+* Web Scraping في بيئة المشروع الحالية يستخدم صفحة HTML محلية تجريبية بهدف اختبار وظيفة الـScraper.
+* يمكن تغيير رابط الـScraping والـCSS Selectors من خلال `config.json`.
+* يمكن تفعيل أو تعطيل مصادر البيانات المختلفة من خلال إعدادات المشروع.
+* يجب عدم وضع كلمات المرور أو مفاتيح الاتصال السرية داخل الكود أو GitHub.
+
+---
+
+## 👩‍💻 الهدف التعليمي
+
+تم بناء المشروع لتطبيق مفاهيم عملية في:
+
+* Data Engineering
+* ETL Pipelines
+* Data Cleaning
+* Data Integration
+* Data Validation
+* Web Scraping
+* APIs
+* Databases
+* MongoDB
+* Automated Testing
+
+ويهدف إلى محاكاة طريقة بناء Data Pipeline متعددة المصادر بشكل منظم وقابل للتطوير.
+
+---
+
+## 📄 الترخيص
+
+هذا المشروع تعليمي ويمكن استخدامه وتطويره لأغراض التعلم والتجربة.
