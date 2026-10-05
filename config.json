@@ -1,0 +1,44 @@
+{
+    "sources": {
+        "csv": {
+            "path": "data/raw/students.csv"
+        },
+        "api": {
+            "url": "http://localhost:8000/students",
+            "timeout": 10,
+            "enabled": true
+        },
+        "database": {
+            "path": "database/students.db",
+            "enabled": true
+        },
+        "mongodb": {
+            "enabled": false,
+            "uri": "mongodb://localhost:27017",
+            "database": "student_data",
+            "collection": "student_extra_data"
+        },
+        "scraping": {
+            "enabled": true,
+            "url": "http://localhost:8000/scraped-students",
+            "timeout": 10,
+            "selectors": {
+                "table": "#students",
+                "rows": "tbody tr",
+                "headers": "thead th",
+                "cells": "td"
+            }
+        }
+    },
+    "output": {
+        "rejected": {
+            "path": "data/rejected/rejected_records.csv"
+        },
+        "mongodb": {
+            "enabled": true,
+            "uri": "mongodb://localhost:27017",
+            "database": "student_pipeline",
+            "collection": "final_students"
+        }
+    }
+}

@@ -1,0 +1,9 @@
+# Python
+pycache/
+*.pyc
+
+# Logs
+logs/
+
+# Database
+database/*.db

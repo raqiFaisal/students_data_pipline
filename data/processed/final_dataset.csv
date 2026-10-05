@@ -1,0 +1,16 @@
+student_id,student_name,age,major,city,gpa,attendance,status,course_id,course_name,credit_hours,semester,score,city_scraping,web_status,performance_level,attendance_status
+1001,Ahmed Ali,21.0,Computer Science,Sanaa,3.45,92.0,Active,C102,Database Systems,3,Fall 2026,91.0,Sanaa,Verified,Very Good,Good
+1002,Sara Mohammed,22.0,Artificial Intelligence,Aden,3.8,88.0,Active,C103,Artificial Intelligence,4,Fall 2026,89.0,Aden,Verified,Excellent,Good
+1003,Omar Hassan,20.0,Information Systems,Taiz,2.95,76.0,Active,C104,Data Structures,3,Fall 2026,84.0,Taiz,Verified,Good,Good
+1004,Laila Ahmed,19.0,Computer Science,Sanaa,3.6,95.0,Active,C105,Web Development,3,Fall 2026,90.0,Sanaa,Verified,Excellent,Good
+1005,Mohammed Saleh,24.0,Data Science,Hodeidah,2.4,68.0,At Risk,C106,Machine Learning,4,Fall 2026,78.0,Hodeidah,Review,Acceptable,Low
+1006,Noura Ali,21.0,Software Engineering,Aden,3.2,84.0,Active,C107,Software Engineering,3,Fall 2026,87.0,Aden,Verified,Very Good,Good
+1007,Khaled Hassan,21.5,Information Systems,Taiz,3.2,91.0,Active,C108,Computer Networks,3,Fall 2026,92.0,Taiz,Review,Very Good,Good
+1008,Mona Saeed,21.5,Artificial Intelligence,Sanaa,3.1,73.0,Active,C109,Operating Systems,3,Fall 2026,81.0,Sanaa,Verified,Very Good,Low
+1009,Ali Ahmed,23.0,Computer Science,Aden,2.8,79.0,Active,C110,Data Science,4,Fall 2026,86.0,Aden,Verified,Good,Good
+1010,Sara Mohammed,22.0,Artificial Intelligence,Aden,3.7,90.0,Active,C104,Data Structures,3,Fall 2026,83.0,Aden,Verified,Excellent,Good
+1011,Ahmed Omar,25.0,Data Science,Sanaa,3.2,86.0,,C105,Web Development,3,Fall 2026,83.0,,,Very Good,Good
+1012,Yasmin Ali,17.0,Software Engineering,Sanaa,3.2,86.0,,C106,Machine Learning,4,Fall 2026,83.0,,,Very Good,Good
+1013,Omar Saleh,21.5,Computer Science,Taiz,3.2,86.0,,C107,Software Engineering,3,Fall 2026,83.0,,,Very Good,Good
+1014,Huda Mohammed,27.0,Information Systems,Aden,3.2,86.0,,C108,Computer Networks,3,Fall 2026,83.0,,,Very Good,Good
+1015,Unknown,21.0,Artificial Intelligence,Sanaa,3.2,86.0,,C109,Operating Systems,3,Fall 2026,83.0,,,Very Good,Good
